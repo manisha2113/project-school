@@ -1,0 +1,96 @@
+1)Get the application from its URL
+git clone <GITHUB_REPOSITORY_URL>
+cd <PROJECT_FOLDER>
+dir
+2)Build your own Docker image
+From the project folder, run:
+docker build -t digital-library:v1 .
+docker images
+->In powershell:minikube image load digital-library:v1
+3) Start Minikube
+minikube start --driver=docker
+minikube status
+kubectl get nodes
+4) Create a Deployment with two replicas
+notepad deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: library-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: library
+  template:
+    metadata:
+      labels:
+        app: library
+    spec:
+      containers:
+      - name: library-container
+        image: digital-library:v1
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+
+kubectl apply -f deployment.yaml
+kubectl get deployments
+kubectl get pods
+5)Expose the application using a Service
+notepad service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: library-service
+spec:
+  type: NodePort
+  selector:
+    app: library
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30081
+kubectl apply -f service.yaml
+kubectl get services
+6)Scale from two to five replicas
+kubectl scale deployment library-deployment --replicas=5
+kubectl get deployments
+kubectl get pods
+7)Demonstrate automatic Pod recreation
+kubectl get pods
+kubectl delete pod <POD_NAME>
+Now immediately run:
+kubectl get pods
+Kubernetes automatically creates a replacement Pod because the Deployment's desired replica count is five.
+
+To watch the process live:
+kubectl get pods -w
+
+ kubectl describe deployment oltrs-deployment
+ minikube service oltrs-service --url
+
+8)Perform a rolling update
+A rolling update replaces old application Pods with new ones gradually, without deleting all Pods at once.
+docker build -t digital-library:v2 .
+minikube image load digital-library:v2
+kubectl set image deployment/library-deployment library-container=digital-library:v2
+kubectl rollout status deployment/library-deployment
+kubectl get pods
+9) Perform rollback
+kubectl rollout undo deployment/library-deployment
+kubectl rollout status deployment/library-deployment
+kubectl describe deployment library-deployment
+kubectl rollout history deployment/library-deployment
+
+10)Access the Digital Library
+minikube service library-service --url
+11)Cleanup
+kubectl delete -f deployment.yaml
+kubectl delete -f service.yaml
+Verify:
+kubectl get deployments
+kubectl get services
+kubectl get pods

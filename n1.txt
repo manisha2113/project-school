@@ -1,0 +1,87 @@
+1)Pull and run Nagios Docker image
+Step 1: Pull the image
+
+Open PowerShell:
+docker pull manios/nagios:latest
+Step 2: Check the downloaded image
+docker images
+Step 3: Run the Nagios container
+We use port 8082 because your other application is using 8081.
+
+docker run -d --name nagios -p 8082:80 manios/nagios:latest
+Step 4: Check whether the container is running
+docker ps
+Step 5: Open Nagios dashboard
+
+Open your browser:
+
+http://localhost:8082
+
+Login:
+- Username: nagiosadmin
+- Password: nagios
+Part 2: Configure host and service monitoring
+Step 1: Enter the Nagios container
+docker exec -it nagios bash
+Step 2: Create the configuration file
+cat > /opt/nagios/etc/objects/library.cfg <<'EOF'
+define host {
+    use         linux-server
+    host_name   library-monitor
+    alias       Library Management Server
+    address     127.0.0.1
+}
+
+define service {
+    use                     local-service
+    host_name               library-monitor
+    service_description    PING
+    check_command           check_ping!100.0,20%!500.0,60%
+}
+
+define service {
+    use                     local-service
+    host_name               library-monitor
+    service_description    Disk Usage
+    check_command           check_local_disk!20%!10%!/
+}
+
+define service {
+    use                     local-service
+    host_name               library-monitor
+    service_description    CPU Load
+    check_command           check_local_load!5.0,4.0,3.0!10.0,6.0,4.0
+}
+
+define service {
+    use                     local-service
+    host_name               library-monitor
+    service_description    HTTP
+    check_command           check_http
+}
+EOF
+
+Step 3: Register the configuration file
+echo "cfg_file=/opt/nagios/etc/objects/library.cfg" >> /opt/nagios/etc/nagios.cfg
+
+Step 4: Validate the configuration
+/opt/nagios/bin/nagios -v /opt/nagios/etc/nagios.cfg
+
+Step 5: Exit the container
+exit
+
+
+Step 6: Restart Nagios
+
+Run in PowerShell:
+docker restart nagios
+
+Step 7: View monitoring results
+
+Open:
+
+http://localhost:8082
+
+Go to:
+- Hosts → Hosts: View library-monitor.
+- Services → Services: View PING, Disk Usage, CPU Load and HTTP.

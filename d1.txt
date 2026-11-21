@@ -1,0 +1,94 @@
+Common practical workflow
+1. Create project folder
+   
+   powershell     mkdir MyApplication     cd MyApplication
+2. Create Compose file
+   
+   powershell     notepad docker-compose.yml
+
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: library-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: Root@123
+      MYSQL_DATABASE: librarydb
+      MYSQL_USER: libraryuser
+      MYSQL_PASSWORD: Library@123
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - library-network
+
+  wordpress:
+    image: wordpress:latest
+    container_name: library-wordpress
+    restart: always
+    ports:
+      - "8083:80"
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: libraryuser
+      WORDPRESS_DB_PASSWORD: Library@123
+      WORDPRESS_DB_NAME: librarydb
+    volumes:
+      - wp_data:/var/www/html
+    depends_on:
+      - mysql
+    networks:
+      - library-network
+
+volumes:
+  db_data:
+  wp_data:
+
+networks:
+  library-network:
+    driver: bridge
+
+
+Write service, network and volume configurations.
+4. Pull images
+   
+   powershell     docker compose pull
+5. Start containers
+   
+   powershell     docker compose up -d
+6. Check containers
+   
+   powershell     docker compose ps
+7. Open application in browser
+   
+   http://localhost:PORT
+8. Test recovery and persistence
+   
+   powershell     docker compose stop     docker compose start     docker compose down     docker compose up -d
+
+Step 7 – Demonstrate container recovery
+docker compose stop wordpress
+docker compose start wordpress
+docker compose ps
+Step 8 – Demonstrate database persistence
+Stop and remove the containers without deleting volumes:
+docker compose down
+docker compose up -d
+docker network ls
+docker volume ls
+
+So the correct approach is:
+1. Clone the given GitHub repository.
+2. Check its Java application structure and database requirements.
+3. Create a Dockerfile to build the Java application.
+4. Create a docker-compose.yml to run the application and its required database, if applicable.
+5. Configure a Docker network and persistent volumes where needed.
+6. Run the containers and verify the application in your browser.
+7. Stop/restart containers and verify recovery and data persistence.
+
+Start with these PowerShell commands:
+mkdir DigitalLibrary
+cd DigitalLibrary
+git clone https://github.com/deepthisagar7/library-management.git
+cd library-management
+dir

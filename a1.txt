@@ -1,0 +1,44 @@
+Modules
+EC2
+Create instance 
+Connect
+.pem folder in cmd
+Go that .pem path
+Copy ssh key
+Sudo apt update 
+Sudo apt-get install docker-io
+Sudo apt install git
+Sudo apt install nano
+Create index.html 
+Open git bash
+Git init
+Git add .
+Git commit -m message
+Create empty repo in git 
+Paste commands 
+Copy url 
+Clone
+Got that folder
+Nano Dockerfile 
+Create Dockerfile
+Crtlo+x
+Sudo docker build -t myapp .
+Sudo docker run -d -p 80:80 myapp
+Open public address:port
+Sudo docker stop containerid 
+
+FROM nginx:alpine
+COPY . / use/share/nginx/html
+
+Manisurya&&23-pass
+
+
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+FROM tomcat:10.1-jdk17-temurin
+COPY --from=build /app/target/*.war /usr/local/tomcat/webapps/ROOT.war
+EXPOSE 8080
+CMD ["catalina.sh", "run"]
